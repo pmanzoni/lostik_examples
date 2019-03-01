@@ -10,4 +10,8 @@ LoStick is a open source USB LoRa® device available here https://www.crowdsuppl
 * Compatible with The Things Network and Loriot
 * Based on the RN2903/R2483 by Microchip
 
+**References**
+* https://github.com/lolsborn/LoStik
+* https://github.com/raspberrypi-tw/lora
+
 ## Code examples
