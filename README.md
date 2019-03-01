@@ -23,13 +23,18 @@ Before executing the code below:
 * ```packer.py```: support file
 
 ### file: ```sender.py```
-- sends a text message red from input
+- sends using Lora a text message red from input
 - execute as: ```python sender.py _lostik-serial-port_```
 
 ### file: ```senderp.py```
-- periodically sends a text message stored in variable "rawinput"
+- periodically sends using Lora a text message stored in variable "rawinput"
 - execute as: ```python senderp.py _lostik-serial-port_```
 
 ### file: ```receiver.py```
-- continuously reads messages
+- continuously reads messages using Lora
 - execute as: ```python receiver.py _lostik-serial-port_```
+
+### file: ```senderp_loriot.py```
+- periodically sends using LoRaWAN  a text message stored in variable "rawinput"
+- uses OTAA and https://www.loriot.io/ servers
+- execute as: ```python senderp_loriot.py _lostik-serial-port_```
