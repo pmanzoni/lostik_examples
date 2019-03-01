@@ -18,6 +18,9 @@ LoStick is a open source USB LoRa® device available here https://www.crowdsuppl
 * ```miniterm.py```: used to connect to a LoStick and send commands manually
 * ```packer.py```: support file
 
+### file: ```sender.py```
+- sends a text message red from input
+- execute as: ```python sender.py _lostik-serial-port_```
 
 ### file: ```senderp.py```
 - periodically sends a text message stored in variable "rawinput"
