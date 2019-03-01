@@ -17,6 +17,7 @@ LoStick is a open source USB LoRa® device available here https://www.crowdsuppl
 Before executing the code below: 
 * check whether the channel parameters are properly set.
 * discover the serial port where the Lostik is connected (```_lostik-serial-port_```). 
+
 For example in _macOS_ with command:```ls /dev/cu.*``` 
 
 ### Support files:
