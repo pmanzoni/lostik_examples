@@ -37,7 +37,7 @@ def Pack_Str(string):
         length = str(length)
 
     payload = SOH + length.encode("hex") + data + CRLF
-    print("RAW: " + payload)
+#    print("RAW: " + payload)
 
     return [length, payload]
 
