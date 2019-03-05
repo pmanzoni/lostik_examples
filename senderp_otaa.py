@@ -14,14 +14,14 @@
 # Author : sosorry
 # Date   : 08/06/2016
 #
-# Example: $ sudo python sender.py 
+# PM: modified march 2019
+# Example: $ sudo python senderp_otaa.py 
 #            Serial Port? /dev/ttyUSB0
 #
-# Modified by PM: 7feb2019
-# execute also as: python sender.py /dev/ttyUSB0
 
 import serial
 import time
+import datetime
 import re
 import json
 import packer
@@ -65,71 +65,87 @@ ser.parity   = "N"
 ser.stopbits = 1
 ser.timeout  = 5
 
+# This command resets and restarts the RN2483 module; 
+# stored internal configurations will be loaded automatically upon reboot
+send_cmd(ser, b'sys reset')  
+
 print('Setting channel parameters:')
-send_cmd(ser, b'radio cw off')  # Disabling Continuous Wave (CW) mode. Semantically identical to "sys reset"
+send_cmd(ser, b'mac pause') # pauses the LoRaWAN stack functionality to allow transceiver configuration
 send_cmd(ser, b'radio set pwr 14')
-send_cmd(ser, b'radio set bw 250')
-send_cmd(ser, b'radio set freq 868100000')
 send_cmd(ser, b'radio set sf sf7')
+# send_cmd(ser, b'radio set bw 250')
+# send_cmd(ser, b'radio set freq 868100000')
+send_cmd(ser, b'mac resume') # resumes the LoRaWAN stack functionality
 
 
-print('Getting channel parameters:')
-
-send_cmd(ser, b'radio get bt')
-send_cmd(ser, b'radio get mod')
-send_cmd(ser, b'radio get freq')
-send_cmd(ser, b'radio get pwr')
-send_cmd(ser, b'radio get sf')
-send_cmd(ser, b'radio get afcbw')
-send_cmd(ser, b'radio get bitrate')
-send_cmd(ser, b'radio get fdev')
-send_cmd(ser, b'radio get prlen')
-send_cmd(ser, b'radio get crc')
-send_cmd(ser, b'radio get iqi')
-send_cmd(ser, b'radio get cr')
-send_cmd(ser, b'radio get wdt')
-send_cmd(ser, b'radio get bw')
+if (DEBUGMODE>1):
+    print('Getting channel parameters:')
+    send_cmd(ser, b'radio get bt')
+    send_cmd(ser, b'radio get mod')
+    send_cmd(ser, b'radio get freq')
+    send_cmd(ser, b'radio get pwr')
+    send_cmd(ser, b'radio get sf')
+    send_cmd(ser, b'radio get afcbw')
+    send_cmd(ser, b'radio get bitrate')
+    send_cmd(ser, b'radio get fdev')
+    send_cmd(ser, b'radio get prlen')
+    send_cmd(ser, b'radio get crc')
+    send_cmd(ser, b'radio get iqi')
+    send_cmd(ser, b'radio get cr')
+    send_cmd(ser, b'radio get wdt')
+    send_cmd(ser, b'radio get bw')
 
 
 # Using OTAA
 print('Setting LoRaWAN parameters:')
+# more infos on settind duty cycle here: https://www.microchip.com/forums/m947922.aspx#947922
+# formula indicated in "RN2483module ug.pdf" page 29 
+send_cmd(ser, b'mac set ch dcycle 0 9') # Sets the duty cycle to 10% 
+send_cmd(ser, b'mac set ch dcycle 1 9') # Sets the duty cycle to 10% 
+send_cmd(ser, b'mac set ch dcycle 2 9') # Sets the duty cycle to 10% 
 # In Loriot get this data from the LoRaWAN Parameters section of the Device part of the console
 # In TTN get this data from the DEVICE OVERVIEW of the console
 send_cmd(ser, b'mac set appkey ___________________________')
-send_cmd(ser, b'mac save')
 # In Loriot get this data from the Device Details section of the Device part of the Loriot console
 # In TTN get this data from the DEVICE OVERVIEW of the console
 send_cmd(ser, b'mac set appeui ___________________________')
-send_cmd(ser, b'mac join otaa')
+send_cmd(ser, b'mac save')
+ser.write(b'mac join otaa'+'\r\n')
+rval = ''
+while "accepted" not in rval:
+    rval = str(ser.readline())
+    if (DEBUGMODE==1):
+        print('Joining... got: '+rval)
 
-
-# pauses the LoRaWAN stack functionality to allow transceiver (radio) configuration
-# must be called before any radio transmission or reception
-send_cmd(ser, b'mac pause')
 
 try:
     kount = 0
     while kount<1000:
 
-        rawinput = 'Hello from pietro '+str(kount)
-
-        try:
-            byte_rawinput = bytes(rawinput + "\r\n")
-        except:
-            byte_rawinput = bytes(rawinput + "\r\n", encoding="UTF-8")
-
         cmd = "mac tx uncnf 1 "
-        _length, _payload = packer.Pack_Str(rawinput)
+        rawpayload = 'Hello '+str(kount)
+        _length, _payload = packer.Pack_Str(rawpayload)
 
         if int(_length) < int(MAX_PAYLOAD_LENGTH):
-            print("Time: " + str(time.ctime()))
-            byte_rawinput = bytes(cmd + _payload)
-            ser.write(byte_rawinput)
-            ser.readline()
+            byte_rawcmd = bytes(cmd + _payload)
+
+            print("Executing: "+byte_rawcmd[:-2]+ " at: " + str(datetime.datetime.now()))
+            
+
+            ser.write(byte_rawcmd)
+            rval = ''
+            while "mac_tx_ok" not in rval:
+                rval = str(ser.readline())
+                if (DEBUGMODE==1):
+                    print('Executing: '+byte_rawcmd[:-2]+'... got: '+rval)
+            if "mac_tx_ok" in rval:
+                print("Sent: " + rawpayload+ " at: " + str(datetime.datetime.now()))
+            else:
+                print("Sending ERROR!")
 
             kount = kount+1
-            time.sleep(5)
-            print("Sent: " + rawinput)
+            # Consider duty cycle...
+            time.sleep(30)
 
 
 finally:
