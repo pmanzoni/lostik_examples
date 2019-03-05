@@ -35,6 +35,11 @@ Before executing the code below:
 - execute as: ```python receiver.py _lostik-serial-port_```
 
 ### file: ```senderp_otaa.py```
-- periodically sends using LoRaWAN  a text message stored in variable "rawinput"
+- periodically sends using LoRaWAN  a text message stored in variable "rawpayload"
 - uses OTAA. Works with https://www.loriot.io/ and https://www.thethingsnetwork.org/ servers
 - execute as: ```python senderp_otaa.py _lostik-serial-port_```
+
+### file: ```senderp_abp.py```
+- periodically sends using LoRaWAN  a text message stored in variable "rawpayload"
+- uses ABP. Works with https://www.loriot.io/ and https://www.thethingsnetwork.org/ servers
+- execute as: ```python senderp_abp.py _lostik-serial-port_```
